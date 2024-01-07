@@ -36,11 +36,11 @@ def after_request(response):
 def index():
     """Show portfolio of stocks"""
     stocks = db.execute(
-        "SELECT symbol AS name, SUM(shares) AS shares FROM users JOIN purchases ON users.id = purchases.user_id WHERE owned=true AND users.id = ? GROUP BY symbol",
+        "SELECT symbol AS name, SUM(shares) AS shares FROM users JOIN purchases ON users.id = purchases.user_id WHERE users.id = ? GROUP BY symbol",
         session["user_id"],
     )
     print(stocks)  # Add this line to check the contents of 'stocks'
-    for i in range(len(stocks)):
+    for i in range(len(stocks) - 1, -1, -1):
         # stocks[stock]["name"]
         # stocks[stock]["shares"]
         stock = stocks[i]
@@ -49,6 +49,8 @@ def index():
         stocks[i] = lookup(stock["name"])
         stocks[i]["shares"] = tmp
         print(stocks[i])
+        if stocks[i]["shares"] == 0:
+            del stocks[i]
 
     cash = db.execute("SELECT cash FROM users WHERE id = ?", session["user_id"])
 
@@ -84,13 +86,12 @@ def buy():
                 return apology("Not enough money to purchase these shares")
             else:
                 db.execute(
-                    "INSERT INTO purchases (user_id, symbol, price, shares, current_cash, owned, bought) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO purchases (user_id, symbol, price, shares, current_cash, bought) VALUES (?, ?, ?, ?, ?, ?)",
                     session["user_id"],
                     quoted["name"],
                     purchase_price,
                     shares,
                     cash["cash"],
-                    1,
                     1,
                 )
                 db.execute(
@@ -116,7 +117,7 @@ def buy():
 def history():
     """Show history of transactions"""
     data = db.execute(
-        "SELECT timestamp, current_cash, bought, sold, username, symbol, shares, owned, price FROM users JOIN purchases ON users.id = purchases.user_id WHERE users.id = ?",
+        "SELECT timestamp, current_cash, bought, sold, username, symbol, shares, price FROM users JOIN purchases ON users.id = purchases.user_id WHERE users.id = ?",
         session["user_id"],
     )
     return render_template("history.html", rows=data)
@@ -219,10 +220,10 @@ def register():
 def sell():
     """Sell shares of stock"""
     stocks = db.execute(
-        "SELECT purchases.id, symbol AS name, SUM(shares) AS shares FROM users JOIN purchases ON users.id = purchases.user_id WHERE owned=true AND users.id = ? GROUP BY symbol",
+        "SELECT purchases.id, symbol AS name, SUM(shares) AS shares FROM users JOIN purchases ON users.id = purchases.user_id WHERE users.id = ? GROUP BY symbol",
         session["user_id"],
     )
-    for i in range(len(stocks)):
+    for i in range(len(stocks) - 1, -1, -1):
         stock = stocks[i]
         tmp = stock["shares"]
         tmp1 = stock["id"]
@@ -231,6 +232,8 @@ def sell():
         stocks[i]["shares"] = tmp
         stocks[i]["id"] = tmp1
         print(stocks[i])
+        if stocks[i]["shares"] == 0:
+            del stocks[i]
     if request.method == "GET":
         return render_template("sell.html", stocks=stocks)
     elif request.method == "POST":
@@ -257,21 +260,21 @@ def sell():
                         "SELECT cash FROM users WHERE id = ?", session["user_id"]
                     )
                     cash = cash[0]
-                    if (stocks[i]["shares"] - shares_to_sell) < 1:
-                        owned = 0
-                    else:
-                        owned = 1
+                    # if (stocks[i]["shares"] - shares_to_sell) == 0:
+                    #     owned = 0
+                    # elif (stocks[i]["shares"] == 0):
+                    #     owned = 1
                     db.execute("BEGIN TRANSACTION")
+                    # db.execute(
+                    #     "UPDATE purchases SET owned = ? WHERE user_id = ? AND purchases.id = ?",
+                    #     owned,
+                    #     session["user_id"],
+                    #     stocks[i]["id"],
+                    # )
                     db.execute(
-                        "UPDATE purchases SET owned = ? WHERE user_id = ? AND purchases.id = ?",
-                        owned,
-                        session["user_id"],
-                        stocks[i]["id"],
-                    )
-                    db.execute(
-                        "INSERT INTO purchases (shares, owned, sold, user_id, symbol, price, current_cash) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        "INSERT INTO purchases (shares, sold, user_id, symbol, price, current_cash) VALUES (?, ?, ?, ?, ?, ?)",
                         (shares_to_sell * (-1)),
-                        owned,
+                        # owned,
                         1,
                         session["user_id"],
                         stock_to_sell,
