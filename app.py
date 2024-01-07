@@ -31,6 +31,47 @@ def after_request(response):
     return response
 
 
+@app.route("/account", methods=["GET", "POST"])
+@login_required
+def account():
+    if request.method == "GET":
+        return render_template("account.html")
+    elif request.method == "POST":
+        added_cash = int(request.form.get("added_cash"))
+        db.execute(
+            "UPDATE users SET cash = cash + ? WHERE id = ?",
+            added_cash,
+            session["user_id"],
+        )
+        cash = db.execute("SELECT cash FROM users WHERE id = ?", session["user_id"])
+        return render_template("added-cash.html", cash=cash[0]["cash"])
+
+
+@app.route("/change-password", methods=["GET", "POST"])
+@login_required
+def change_password():
+    if request.method == "GET":
+        return apology("You're not supposed to be here...")
+    elif request.method == "POST":
+        rows = db.execute("SELECT * FROM users WHERE id = ?", session["user_id"])
+        old_password = str(request.form.get("old_password"))
+        new_password = str(request.form.get("new_password"))
+        conf_new_password = str(request.form.get("conf_new_password"))
+
+        if (len(rows) != 1) or (not check_password_hash(rows[0]["hash"], old_password)):
+            return apology("Old password was not correct")
+        elif new_password != conf_new_password:
+            return apology("Passwords do not match.")
+        else:
+            db.execute(
+                "UPDATE users SET hash = ? WHERE id = ?",
+                generate_password_hash(new_password, salt_length=16),
+                session["user_id"],
+            )
+
+        return render_template("change-password.html")
+
+
 @app.route("/")
 @login_required
 def index():

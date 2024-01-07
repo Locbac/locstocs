@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Account
+{% endblock %}
+
+{% block main %}
+
+<h2>Add Cash</h2>
+<form action="/account" method="post">
+  <input type="number" name="added_cash" placeholder="How much cash to add?" step="100"></input>
+  <button type="submit">Add</button>
+</form>
+
+<h2>Change Password</h2>
+
+<form action="/change-password" method="post">
+  <input type="password" name="old_password" placeholder="Old Password"></input>
+  <input type="password" name="new_password" placeholder="New Password"></input>
+  <input type="password" name="conf_new_password" placeholder="Confirmation"></input>
+  <button type="submit">Change Password</button>
+</form>
+
+{% endblock %}
