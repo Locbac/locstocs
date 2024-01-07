@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Quote
+{% endblock %}
+
+{% block main %}
+
+<h2>{{quoted["name"]}}</h2>
+<h3>{{quoted["price"]}}</h3>
+
+<button href="/buy.html">Looking to Buy This Stock?</button>
+
+{% endblock %}

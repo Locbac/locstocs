@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    History
+{% endblock %}
+
+{% block main %}
+
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th class="text-start">Timestamp</th>
+      <th class="text-end">Cash before Transaction Time</th>
+      <th class="text-end">Bought</th>
+      <th class="text-end">Sold</th>
+      <th class="text-end">Username</th>
+      <th class="text-end">Ticker</th>
+      <th class="text-end">Shares</th>
+      <th class="text-end">Owned</th>
+      <th class="text-end">Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+    <tr>
+      <td class="text-start">{{row["timestamp"]}}</td>
+      <td class="text-end">{{row["current_cash"] | usd}}</td>
+      <td class="text-end">{{row["bought"]}}</td>
+      <td class="text-end">{{row["sold"]}}</td>
+      <td class="text-end">{{row["username"]}}</td>
+      <td class="text-end">{{row["symbol"]}}</td>
+      <td class="text-end">{{row["shares"]}}</td>
+      <td class="text-end">{{row["owned"]}}</td>
+      <td class="text-end">{{row["price"] | usd}}</td>
+    </tr>
+    {% endfor %}
+
+  </tbody>
+  <tfoot>
+    <!-- <tr> -->
+    <!--   <td class="border-0 fw-bold text-end" colspan="3">Cash</td> -->
+    <!-- </tr> -->
+    <tr>
+      <td class="border-0 fw-bold text-end" colspan="3">TOTAL</td>
+      <td class="border-0 w-bold text-end">{{cash}}</td>
+    </tr>
+</tfoot>
+</table>
+
+
+{% endblock %}

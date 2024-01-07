@@ -1,0 +1,17 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Bought!
+{% endblock %}
+
+{% block main %}
+
+<h1>You Bought:</h1>
+
+<h2>Stock: {{quoted["name"]}}</h2>
+<h3>Price per Share: {{quoted["price"]}}</h3>
+<h3>Total: {{purchase_price}}</h3>
+<h3>Remaining Cash: {{current_cash}}</h3>
+
+
+{% endblock %}
